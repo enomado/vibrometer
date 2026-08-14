@@ -1,0 +1,22 @@
+[target.riscv32imc-unknown-none-elf]
+runner = "espflash flash --monitor --chip esp32c3 --log-format defmt"
+
+[env]
+DEFMT_LOG = "info"
+
+[build]
+rustflags = [
+  "-C",
+  "link-arg=-Tdefmt.x",
+
+  "-C",
+  "link-arg=-Tlinkall.x",
+
+  "-C",
+  "force-frame-pointers",
+]
+
+target = "riscv32imc-unknown-none-elf"
+
+[unstable]
+build-std = ["alloc", "core"]

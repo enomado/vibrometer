@@ -1,0 +1,19 @@
+[package]
+name = "vibro-receiver"
+version = "0.1.0"
+edition = "2024"
+default-run = "vibro-receiver"
+
+[dependencies]
+vibro-protocol = { path = "../crates/protocol", features = ["alloc"] }
+vibro-analysis = { path = "../crates/analysis" }
+vibro-types = { path = "../crates/types" }
+postcard = { version = "*", features = ["alloc"] }
+anyhow = { version = "*" }
+arrow = { version = "59" }
+parquet = { version = "59", features = ["arrow"] }
+eframe = { version = "0.35" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
+clap = { version = "4", features = ["derive"] }
+rodio = { version = "0.22" }

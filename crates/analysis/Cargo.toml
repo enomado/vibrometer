@@ -1,0 +1,15 @@
+[package]
+name = "vibro-analysis"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# FFT
+rustfft = "6"
+# Complex number arithmetic (Complex<f64>)
+num-complex = "0.4"
+vibro-types = { path = "../types" }
+
+[dev-dependencies]
+# Для тестовых сигналов нужны тригонометрия и генерация шума
+approx = "0.5"

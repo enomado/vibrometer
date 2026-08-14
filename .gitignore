@@ -1,0 +1,6 @@
+target/
+recordings/
+
+# Локальные параметры прошивки: wifi ssid/пароль + адрес хоста.
+# Шаблон — firmware/config.toml.template.
+firmware/config.toml

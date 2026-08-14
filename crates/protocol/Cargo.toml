@@ -1,0 +1,12 @@
+[package]
+name = "vibro-protocol"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+alloc = ["serde/alloc"]
+
+[dependencies]
+serde = { version = "*", default-features = false, features = ["derive"] }
+postcard = { version = "*" }
+vibro-types = { path = "../types" }

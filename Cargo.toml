@@ -1,0 +1,12 @@
+[workspace]
+members = ["crates/*", "host"]
+resolver = "3"
+
+# The firmware is a separate workspace: it builds for riscv32imc-unknown-none-elf
+# with its own toolchain, linker scripts and `build-std`, so it cannot share the
+# host workspace's lockfile or profiles. It still depends on `crates/protocol`
+# and `crates/types` through relative path dependencies.
+exclude = ["firmware"]
+
+[profile.release]
+debug = true

@@ -1,0 +1,134 @@
+[package]
+name = "vibrometer-fw"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "vibrometer-fw"
+path = "./src/bin/main.rs"
+
+# Своя workspace-граница: прошивка собирается под riscv32imc-unknown-none-elf
+# со своим Cargo.lock и профилями, поэтому не входит в workspace хоста.
+# `patches/esp-phy` подтягивается как path-зависимость и становится членом
+# этой workspace автоматически; `../crates/*` лежат вне каталога и членами не становятся.
+[workspace]
+
+[dependencies]
+vibro-protocol = { path = "../crates/protocol" }
+vibro-types = { path = "../crates/types" }
+
+cfg-if = { version = "*" }
+static_cell = { version = "*" }
+
+heapless = { version = "*", features = ["portable-atomic"] }
+serde = { version = "*", default-features = false, features = ["derive"] }
+postcard = { version = "*" }
+libm = { version = "*" }
+
+embedded-hal = { version = "1" }
+embedded-hal-bus = { version = "*" }
+embedded-hal-async = { version = "*" }
+embedded-io = { version = "*" }
+embedded-io-async = { version = "*" }
+
+defmt = { version = "*" }
+defmt-rtt = { version = "*" }
+
+esp-hal = { git = "https://github.com/esp-rs/esp-hal", branch = "main", features = [
+  "rt",
+  "defmt",
+  "esp32c3",
+  "unstable",
+] }
+
+esp-alloc = { git = "https://github.com/esp-rs/esp-hal", package = "esp-alloc", branch = "main", features = [
+  "esp32c3",
+] }
+
+esp-sync = { git = "https://github.com/esp-rs/esp-hal", package = "esp-sync", branch = "main", features = [
+  "esp32c3",
+] }
+
+esp-bootloader-esp-idf = { git = "https://github.com/esp-rs/esp-hal", package = "esp-bootloader-esp-idf", branch = "main", features = [
+  "esp32c3",
+] }
+
+esp-radio = { git = "https://github.com/esp-rs/esp-hal", package = "esp-radio", branch = "main", features = [
+  "unstable",
+  "defmt",
+  "esp-alloc",
+  "esp32c3",
+  "wifi",
+  "ble",
+  "coex",
+] }
+
+trouble-host = { git = "https://github.com/embassy-rs/trouble", branch = "main", features = [
+  "default-packet-pool-mtu-255",
+  "derive",
+] }
+
+embassy-futures = { version = "0.1" }
+
+esp-println = { git = "https://github.com/esp-rs/esp-hal", package = "esp-println", branch = "main", features = [
+  "esp32c3",
+  "defmt-espflash",
+] }
+
+esp-backtrace = { git = "https://github.com/esp-rs/esp-hal", package = "esp-backtrace", branch = "main", features = [
+  "println",
+  "panic-handler",
+  "esp32c3",
+] }
+
+esp-rtos = { git = "https://github.com/esp-rs/esp-hal", package = "esp-rtos", branch = "main", features = [
+  "esp32c3",
+  "embassy",
+  "esp-radio",
+] }
+
+embassy-sync = { version = "*" }
+embassy-embedded-hal = { version = "*" }
+embassy-executor = { version = "0.10" }
+
+embassy-net = { version = "*", features = [
+  "defmt",
+  "dhcpv4",
+  "medium-ethernet",
+  "tcp",
+  "udp",
+  "dns",
+] }
+
+embassy-time = { version = "*" }
+
+smoltcp = { version = "*", default-features = false, features = [
+  "medium-ethernet",
+  "proto-dhcpv4",
+  "proto-ipv4",
+  "socket-tcp",
+] }
+critical-section = "1.2.0"
+
+
+[build-dependencies]
+toml = "*"
+
+# Патч esp-phy: fix PHY clock ref count leak в disable_phy().
+# Без этого каждый неудачный TCP connect утекает ~28 PHY clock refs (u8 counter),
+# overflow panic после ~9 попыток. См. https://github.com/esp-rs/esp-hal/issues/XXXX
+[patch."https://github.com/esp-rs/esp-hal"]
+esp-phy = { path = "patches/esp-phy" }
+
+
+[profile.dev]
+opt-level = "s"
+
+[profile.release]
+codegen-units = 1
+debug = 2
+debug-assertions = false
+incremental = false
+lto = 'fat'
+opt-level = 's'
+overflow-checks = false
