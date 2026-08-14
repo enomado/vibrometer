@@ -1,6 +1,6 @@
 # vibrometer
 
-A laser vibrometer / rotor balancing rig: ESP32-C3 firmware that acquires a 24-bit
+A rotor vibration / balancing rig: ESP32-C3 firmware that acquires a 24-bit
 vibration signal, and a desktop app that receives it over WiFi, visualizes it live,
 records sessions and does the rotor-dynamics math.
 
@@ -9,6 +9,44 @@ domain types — `crates/protocol` and `crates/types` are `no_std` and are compi
 into the firmware as well as into the host app.
 
 > Code comments and `docs/` are in Russian.
+
+## Sensing principle
+
+Despite the name, there is **no laser and no optics** in the vibration path. The sensor is a
+home-made *electrodynamic (seismic) velocity transducer* — a permanent magnet and a coil:
+
+```
+         bearing pedestal (vibrates)
+   ┌────────────────────────────────────┐
+   │    ▄▄▄▄▄▄   magnet — fixed to case │
+   │    ║║║║║║   (moves with housing)   │
+   │   ╭──────╮                         │
+   │   │ coil │──╱╲╱╲── spring          │   coil = inertial mass
+   │   ╰──────╯                         │
+   └────────────────────────────────────┘
+        EMF ∝ velocity of coil relative to magnet
+```
+
+- the magnet is bolted to the housing, the coil hangs on a spring suspension and works as the
+  inertial mass. **Well above the suspension resonance** that mass stays nearly still in inertial
+  space, so the coil-to-magnet relative motion equals the *absolute* motion of the housing
+- Faraday's law makes the induced EMF proportional to the rate of flux change — that is, to
+  **velocity**, not to displacement and not to acceleration. So the transducer natively measures
+  mm/s, which is exactly the quantity ISO 10816 / 20816 severity limits are written in: nothing in
+  the chain has to integrate or differentiate
+- it is **passive** — no supply, no sensor-side electronics, no electronics noise. The output is a
+  raw analog voltage on the order of ~20–30 mV per mm/s, wired straight into the differential input
+  of the 24-bit ADS1256, without a preamp
+- usable band ≈ 10–1000 Hz: bounded below by the spring/mass resonance of the suspension, above by
+  coil inductance and the dynamics of the moving mass
+
+Two such transducers are used, one per bearing pedestal. The phase reference is a separate
+**keyphasor** — one pulse per shaft revolution from an optical reflective sensor (TCRT5000) aimed at
+a mark on the shaft, wired to a GPIO interrupt. It yields both the RPM (from the pulse period) and
+the 0° shaft angle, and that angle is what makes iterative influence-coefficient balancing possible.
+
+Sensor build notes and the physics behind the methods: [docs/08_hardware.md](docs/08_hardware.md),
+[docs/01_physics.md](docs/01_physics.md).
 
 ## Layout
 
