@@ -9,8 +9,7 @@ path = "./src/bin/main.rs"
 
 # Своя workspace-граница: прошивка собирается под riscv32imc-unknown-none-elf
 # со своим Cargo.lock и профилями, поэтому не входит в workspace хоста.
-# `patches/esp-phy` подтягивается как path-зависимость и становится членом
-# этой workspace автоматически; `../crates/*` лежат вне каталога и членами не становятся.
+# `../crates/*` лежат вне каталога и членами этой workspace не становятся.
 [workspace]
 
 [dependencies]
@@ -113,12 +112,6 @@ critical-section = "1.2.0"
 
 [build-dependencies]
 toml = "*"
-
-# Патч esp-phy: fix PHY clock ref count leak в disable_phy().
-# Без этого каждый неудачный TCP connect утекает ~28 PHY clock refs (u8 counter),
-# overflow panic после ~9 попыток. См. https://github.com/esp-rs/esp-hal/issues/XXXX
-[patch."https://github.com/esp-rs/esp-hal"]
-esp-phy = { path = "patches/esp-phy" }
 
 
 [profile.dev]

@@ -171,9 +171,3 @@ ADS1256 notes: SPI Mode 1 with manual CS; init sends RESET + SDATAC and then RDA
 for continuous streaming; a `SELFCAL` is required after a MUX change, `SYNC+WAKEUP`
 alone is not enough. A healthy init logs
 `ADS1256: init ok STATUS=0x30 MUX=0x01 ADCON=0x00 DRATE=0xb0`.
-
-## Patches
-
-`firmware/patches/esp-phy` — vendored fix for a PHY clock ref-count leak in
-`disable_phy()`. Without it every failed TCP connect leaks ~28 refs from a `u8`
-counter, which panics on overflow after ~9 attempts.
